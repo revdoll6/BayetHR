@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Candidate {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  status    UserStatus @default(ACTIVE)
+  phone     String?
+  address   String?
+  resumeUrl String?    @map("resume_url")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  applications Application[]
+
+  @@map("candidates")
+}
+
+model Application {
+  id          String   @id @default(uuid())
+  candidateId String   @map("candidate_id")
+  status      ApplicationStatus @default(PENDING)
+  
+  // Domain Selection
+  jobPositionId String  @map("job_position_id")
+  
+  // Personal Information
+  firstName     String  @map("first_name")
+  lastName      String  @map("last_name")
+  mobile        String
+  birthCertificateNumber String  @map("birth_certificate_number")
+  birthDate     DateTime @map("birth_date")
+  wilayaId      String  @map("wilaya_id")
+  communeId     String  @map("commune_id")
+  photo         String?
+  
+  // Education & Experience
+  educations Education[]
+  experience Json @default("[]")
+  certifications Json @default("[]")
+  
+  // Skills
+  softSkills Json @default("[]")
+  languages Json @default("[]")
+  
+  // Documents
+  profileImage String? @map("profile_image_url")
+  cv String? @map("cv_url")
+  certificates Json? @map("certificate_urls")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  jobPosition JobPosition @relation(fields: [jobPositionId], references: [id])
+
+  @@map("applications")
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  ACCEPTED
+  REJECTED
+}
+
+enum AdminStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum AdminRole {
+  RH
+  DRH
+}
+
+model Admin {
+  id        String      @id @default(cuid())
+  name      String
+  email     String      @unique
+  password  String
+  role      AdminRole   @default(RH)
+  status    AdminStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("admins")
+}
+
+model JobPosition {
+  id        String   @id @default(cuid())
+  name      String
+  ar_name   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  applications Application[]
+
+  @@map("job_positions")
+}
+
+model Education {
+  id          String   @id @default(uuid())
+  type        String   // 'universitaire', 'formation-professionnelle', 'formation'
+  level       String?  // For university: 'Licence', 'Master', 'Doctorat'
+  institution String
+  fieldOfStudy String  @map("field_of_study")
+  startDate   DateTime @map("start_date")
+  endDate     DateTime? @map("end_date")
+  isActive    Boolean  @default(false) @map("is_active")
+  description String?  @db.Text
+  
+  // Relations
+  applicationId String @map("application_id")
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("educations")
+}
