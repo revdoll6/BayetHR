@@ -52,6 +52,12 @@ export async function GET(request: NextRequest) {
       include: {
         jobPosition: true,
         educations: true,
+        candidate: {
+          select: {
+            email: true,
+            name: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc',

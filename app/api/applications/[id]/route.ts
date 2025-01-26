@@ -48,38 +48,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   console.log('Request headers:', Object.fromEntries(request.headers.entries()));
 
   try {
-    // First, check if the application exists without including relations
-    const applicationExists = await db.application.findUnique({
-      where: {
-        id: params.id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!applicationExists) {
-      console.error('Application not found in database:', params.id);
-      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
-    }
-
-    console.log('Application exists, fetching full details...');
-
-    const application = (await db.application.findUnique({
-      where: {
-        id: params.id,
-      },
+    const application = await db.application.findUnique({
+      where: { id: params.id },
       include: {
+        jobPosition: true,
+        educations: true,
         candidate: {
           select: {
-            name: true,
             email: true,
           },
         },
-        jobPosition: true,
-        educations: true,
       },
-    })) as ApplicationWithRelations;
+    });
 
     if (!application) {
       console.error('Application not found:', params.id);

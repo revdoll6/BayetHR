@@ -13,6 +13,7 @@ import {
   FiBriefcase,
   FiCalendar,
   FiAlertCircle,
+  FiRefreshCw,
 } from 'react-icons/fi';
 
 interface DashboardStats {
@@ -30,13 +31,14 @@ interface DashboardStats {
     status: string;
     createdAt: string;
   }>;
+  reviewingApplications: number;
 }
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['admin-dashboard-stats'],
     queryFn: async () => {
-      const response = await axios.get('/api/admin/dashboard/stats');
+      const response = await axios.get('/api/admin/dashboard');
       return response.data;
     },
   });
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
@@ -130,10 +132,38 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <Link
-              href="/admin/applications?status=pending"
+              href="/admin/applications?status=PENDING"
               className="text-sm text-blue-700 font-medium hover:text-blue-900"
             >
               Review pending
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FiRefreshCw className="h-6 w-6 text-blue-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Reviewing Applications
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats?.reviewingApplications || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-50 px-5 py-3">
+            <Link
+              href="/admin/applications?status=REVIEWING"
+              className="text-sm text-blue-700 font-medium hover:text-blue-900"
+            >
+              View under review
             </Link>
           </div>
         </div>
@@ -158,7 +188,7 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <Link
-              href="/admin/applications?status=accepted"
+              href="/admin/applications?status=ACCEPTED"
               className="text-sm text-blue-700 font-medium hover:text-blue-900"
             >
               View accepted
